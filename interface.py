@@ -1,6 +1,6 @@
 import baseConnection as db
 import arrow
-import os
+import json
 
 USERNAME = None
 
@@ -166,22 +166,15 @@ if __name__ == '__main__':
         f = open('memory.sav', 'r')
         db.CURR_ID = int(f.read())
         f.close()
+
+        json_file = open('credential.json', 'r')
+        credentials = json.load(f)
     except:
         db.CURR_ID = 0
 
-    with db.driver.session(database="twitter") as session:
-        # CREATE CONSTRAINT post_id_unique IF NOT EXISTS FOR (p:Post) REQUIRE p.id IS UNIQUE
+    with db.driver.session(database=credentials["database"]) as session:
         while True:
             menu(session)
             print("="*60)
 
 #leave()
-
-
-# with db.driver.session(database="twitter") as session:
-#     session.execute_write(db.create_user, "Ramon")
-#     results = session.execute_read(db.show_feed, "Ramon")
-#     for r in results:
-#         print(r.data())
-
-# db.driver.close()

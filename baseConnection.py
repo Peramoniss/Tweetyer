@@ -1,11 +1,12 @@
 # Example in Python using the Neo4j driver
 from neo4j import GraphDatabase
+import json
 
-uri = "neo4j://localhost:7687"
-username = "neo4j"
-password = "senhasegura"
 
-driver = GraphDatabase.driver(uri, auth=(username, password))
+f = open("credentials.json", "r")
+data = json.load(f)
+
+driver = GraphDatabase.driver(data["uri"], auth=(data["username"], data["password"]))
 
 CURR_ID = 0
 CURR_PAGE = 0
@@ -32,7 +33,7 @@ def follow_user(tx, follower, followee):
 def show_feed(tx, username):
     # global CURR_PAGE
     # skip = CURR_PAGE * 10
-    results = tx.run("MATCH (n:User {name: $name})\nMATCH ( (n)-[:FOLLOWS]->(y) )\nMATCH ( (y)-[:POSTED]->(p) )\nRETURN p.text as post, p.id as id, p.creation as creation, y.name as username, COUNT{ ()-[:LIKED]->(p) } as likes, COUNT{ ()-[:FOLLOWS]->(y) } as followers\nORDER BY likes DESC, followers DESC, creation DESC", name=username) #\nSKIP $skip\nLIMIT 10 TODO: Implement pagination to fasten the queries maybe?
+    results = tx.run("MATCH (n:User {name: $name})\nMATCH ( (n)-[:FOLLOWS]->(y) )\nMATCH ( (y)-[:POSTED]->(p) )\nWHERE NOT (p)-[:ANSWERS]->()\nRETURN p.text as post, p.id as id, p.creation as creation, y.name as username, COUNT{ ()-[:LIKED]->(p) } as likes, COUNT{ ()-[:FOLLOWS]->(y) } as followers\nORDER BY likes DESC, followers DESC, creation DESC", name=username) #\nSKIP $skip\nLIMIT 10 TODO: Implement pagination to fasten the queries maybe?
     return list(results)
 
 def match_answers(tx, id):
