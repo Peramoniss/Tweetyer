@@ -162,17 +162,20 @@ def menu(session):
             leave()
 
 if __name__ == '__main__':
+    db_name = ''
     try:
         f = open('memory.sav', 'r')
         db.CURR_ID = int(f.read())
         f.close()
 
-        json_file = open('credential.json', 'r')
-        credentials = json.load(f)
+        json_file = open('credentials.json', 'r')
+        credentials = json.load(json_file)
+        db_name = credentials["database"] if credentials["database"] else 'neo4j'
+        json_file.close()
     except:
         db.CURR_ID = 0
 
-    with db.driver.session(database=credentials["database"]) as session:
+    with db.driver.session(database=db_name) as session:
         while True:
             menu(session)
             print("="*60)

@@ -1,12 +1,13 @@
 import baseConnection as db
+import json
 
 def seed_database():
     # 1. Define Constraints (Crucial for performance and data integrity)
     constraints = [
-        "CREATE CONSTRAINT post_id IF NOT EXISTS FOR (p:Post) REQUIRE p.id IS UNIQUE"
+        "CREATE CONSTRAINT post_id IF NOT EXISTS FOR (p:Post) REQUIRE p.id IS UNIQUE",
         "CREATE CONSTRAINT user_username IF NOT EXISTS FOR (u:User) REQUIRE u.name IS UNIQUE"
     ]
-    
+
     # 2. Define Sample Data
     seed_query = """
     MERGE (u1:User {name: 'Tweety'})
@@ -44,7 +45,7 @@ def seed_database():
 
     MERGE (p4:Post {id: 3, text: "I did, I did thaw a putty tat!", creation: datetime()})
     MERGE (u1)-[:POSTED]->(p4)
-    MERGE (p4)-[:ANSWERS]->(p1)
+    MERGE (p4)-[:ANSWERS]->(p3)
 
     MERGE (u2)-[:LIKED]->(p3)
     MERGE (u3)-[:LIKED]->(p3)
@@ -63,8 +64,13 @@ def seed_database():
 
     f = open('memory.sav', 'w')
     f.write('4') # Saves correct id savepoint
+    f.close()
 
-    with db.driver.session(database="twitter") as session:  
+    f = open('credentials.json', 'r')
+    data = json.load(f)
+    f.close()
+
+    with db.driver.session(database=data["database"]) as session:  
         for c in constraints:
             session.run(c)
         session.run(seed_query)
